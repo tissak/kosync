@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  kosync:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.arm64
+    image: kosync:arm64
+    container_name: kosync
+    restart: unless-stopped
+    ports:
+      - "3044:3044"
+    environment:
+      - KOSYNC_ADDR=0.0.0.0:3044
+    volumes:
+      - kosync-data:/srv/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3044/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  kosync-data:
+    driver: local

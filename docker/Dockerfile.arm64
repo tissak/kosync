@@ -1,0 +1,32 @@
+FROM --platform=linux/arm64 rust:1.70-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache musl-dev
+
+# Create a new empty project
+WORKDIR /usr/src/kosync
+COPY . .
+
+# Build the application
+RUN cargo build --release --target aarch64-unknown-linux-musl
+
+# Runtime stage
+FROM --platform=linux/arm64 alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata
+
+# Create app directory
+WORKDIR /srv
+
+# Copy the binary from the builder stage
+COPY --from=builder /usr/src/kosync/target/aarch64-unknown-linux-musl/release/kosync /srv/kosync
+
+# Create data directory and set permissions
+RUN mkdir -p /srv/data && chmod 777 /srv/data
+
+# Expose the port
+EXPOSE 3044
+
+# Set the entrypoint
+CMD ["/srv/kosync"]

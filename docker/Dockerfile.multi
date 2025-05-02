@@ -1,0 +1,40 @@
+FROM --platform=$BUILDPLATFORM rust:1.70-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache musl-dev
+
+# Create a new empty project
+WORKDIR /usr/src/kosync
+COPY . .
+
+# Build for the target platform
+ARG TARGETPLATFORM
+RUN case "$TARGETPLATFORM" in \
+      "linux/amd64") TARGET="x86_64-unknown-linux-musl" ;; \
+      "linux/arm64") TARGET="aarch64-unknown-linux-musl" ;; \
+      *) TARGET="x86_64-unknown-linux-musl" ;; \
+    esac && \
+    cargo build --release --target $TARGET && \
+    mkdir -p /build && \
+    cp target/$TARGET/release/kosync /build/
+
+# Runtime stage
+FROM --platform=$TARGETPLATFORM alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata
+
+# Create app directory
+WORKDIR /srv
+
+# Copy the binary from the builder stage
+COPY --from=builder /build/kosync /srv/kosync
+
+# Create data directory and set permissions
+RUN mkdir -p /srv/data && chmod 777 /srv/data
+
+# Expose the port
+EXPOSE 3044
+
+# Set the entrypoint
+CMD ["/srv/kosync"]
