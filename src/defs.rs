@@ -11,9 +11,9 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-pub const DEFAULT_ADDR: &str = "0.0.0.0:3000";
+pub const DEFAULT_ADDR: &str = "0.0.0.0:3044";
 pub const DEFAULT_TREE_NAME: &str = "kosync";
-pub const DEFAULT_DB_PATH: &str = "data/kosync";
+pub const DEFAULT_DB_PATH: &str = "data/kosync_new";
 pub const FIELD_LEN_LIMIT: usize = 4096;
 
 #[derive(Debug, Deserialize, Serialize)]

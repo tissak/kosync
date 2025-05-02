@@ -21,17 +21,19 @@ shadow!(build);
 #[tokio::main]
 async fn main() {
     // initialize logger
-    if cfg!(release) {
-        tracing_subscriber::fmt()
-            .with_max_level(tracing::Level::INFO)
-            .compact()
-            .init();
-    } else {
+    if cfg!(debug_assertions) {
+        // Debug mode (non-release)
         tracing_subscriber::fmt()
             .with_max_level(tracing::Level::DEBUG)
             .pretty()
             .with_line_number(true)
             .with_thread_names(true)
+            .init();
+    } else {
+        // Release mode
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::INFO)
+            .compact()
             .init();
     }
 
